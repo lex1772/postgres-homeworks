@@ -12,3 +12,12 @@ SELECT * INTO discontinued_products FROM products WHERE discontinued = 1
 -- Для 4-го пункта может потребоваться удаление ограничения, связанного с foreign_key. Подумайте, как это можно решить, чтобы связь с таблицей order_details все же осталась.
 ALTER TABLE order_details DROP CONSTRAINT fk_order_details_products;
 DELETE FROM products WHERE discontinued = 1;
+
+SELECT order_id, product_id, order_details.unit_price, quantity, discount INTO order_details_discontinued_products FROM order_details
+INNER JOIN discontinued_products USING (product_id)
+WHERE discontinued_products.discontinued = 1
+
+DELETE FROM order_details WHERE product_id in (SELECT product_id from order_details_discontinued_products)
+
+ALTER TABLE order_details ADD CONSTRAINT fk_order_details_product_id FOREIGN KEY(product_id) REFERENCES products(product_id);
+ALTER TABLE order_details_discontinued_products ADD CONSTRAINT fk_discontinued_products_product_id FOREIGN KEY(product_id) REFERENCES discontinued_products(product_id)
